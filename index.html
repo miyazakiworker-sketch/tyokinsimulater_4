@@ -175,8 +175,7 @@
             
             <div id="res-advice" style="margin-top: 15px; font-size: 13px; color: #747d8c; line-height: 1.4; border-top: 1px solid #ced6e0; padding-top: 10px;"></div>
 
-            <!-- パソコンの過剰セキュリティを100%すり抜けるコピー式ボタンに固定しました -->
-            <button id="copy-btn">報告文をコピーしてXを開く 📋</button>
+            <button id="copy-btn">報告文をコピーする 📋</button>
         </div>
     </div>
 
@@ -233,19 +232,16 @@
             resAdvice.textContent = advice;
 
             copyBtn.style.display = "block";
-            copyBtn.textContent = "報告文をコピーしてXを開く 📋";
+            copyBtn.textContent = "報告文をコピーする 📋";
             copyBtn.style.backgroundColor = "#1da1f2";
 
-            shareText = `ココアの未来貯金シミュレーターで計算しました！毎月${surplus.toLocaleString()}円貯金し、あと【${months}ヶ月】で目標達成してフリーランスへ挑戦します！ #プログラミング初心者 #未来貯金シミュレーター`;
+            shareText = `ココアの未来貯金シミュレーターで計画を計算しました！毎月${surplus.toLocaleString()}円貯金し、あと【${months}ヶ月】で目標達成してフリーランスへ挑戦します！ #プログラミング初心者 #未来貯金シミュレーター`;
         });
 
         copyBtn.addEventListener("click", () => {
             navigator.clipboard.writeText(shareText).then(() => {
-                copyBtn.textContent = "コピー完了！Xへジャンプします...💨";
+                copyBtn.textContent = "コピー完了！そのままXに貼り付けられます！ ✅";
                 copyBtn.style.backgroundColor = "#2ed573";
-                setTimeout(() => {
-                    window.open("https://x.com", "_blank");
-                }, 1000);
             }).catch(err => {
                 alert("コピーに失敗しました。");
             });
