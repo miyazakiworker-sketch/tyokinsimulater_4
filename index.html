@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>未来貯金シミュレーター 2.0</title>
   <style>
-    /* ココアさん仕様：PC真ん中寄せ・スマホ完全フィット・集中できる極上黒モード */
+    /* ココアさん標準：PC真ん中寄せ・スマホ完全フィット・極上黒モード */
     body {
       background-color: #12161a;
       font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
@@ -112,34 +112,42 @@
 <div class="container">
   <h1>💰 未来貯金シミュレーター 2.0</h1>
   
-  <label>① 毎月の積立額</label>
+  <!-- 【復活】目標金額の入力欄 -->
+  <label>① 目標金額</label>
   <div class="input-group">
-    <input type="number" id="monthly-input" value="5" min="0">
+    <input type="number" id="target-input" value="1000" min="0">
     <span class="unit">万円</span>
   </div>
 
-  <label>② 積立期間</label>
+  <!-- 元の機能 -->
+  <label>② 毎月の積立・貯金額</label>
   <div class="input-group">
-    <input type="number" id="years-input" value="10" min="0">
-    <span class="unit">年間</span>
+    <input type="number" id="monthly-input" value="10" min="0">
+    <span class="unit">万円</span>
   </div>
 
-  <label>③ 想定年利（新NISA運用など）</label>
+  <!-- 【新設】複利運用のための年利設定 -->
+  <label>③ 想定年利（新NISA運用など ※0%で純粋貯金）</label>
   <div class="input-group">
     <input type="number" id="rate-input" value="5" min="0" step="0.1">
     <span class="unit">％</span>
   </div>
 
-  <button id="calc-btn">未来の資産を一瞬で計算する！</button>
+  <button id="calc-btn">目標達成までの未来を一瞬で計算！</button>
 
   <!-- 計算結果出力ボックス -->
   <div id="result-box" class="result-box">
     <div class="result-title">シミュレーション結果</div>
-    <div class="result-value">普通に貯金した場合: <span id="res-savings" style="font-weight:bold;">0</span> 万円</div>
-    <div class="result-value">複利運用した場合: <span id="res-total" class="highlight">0</span> 万円</div>
+    
+    <!-- 【復活・超強化】目標達成までの残り年数 -->
+    <div class="result-value">🎯 目標達成までの期間: <span id="res-years" class="highlight">0</span> 年</div>
+    <div class="result-value">その時の純貯金総額（元本）: <span id="res-savings" style="font-weight:bold;">0</span> 万円</div>
+    
+    <!-- 新機能 -->
     <div class="result-value" style="border-top: 1px dashed #2d3748; padding-top: 10px; margin-top: 10px;">
-      🌿 毎月の不労所得（年利4%ルール換算）: <span id="res-unearned" class="unearned">0</span> 万円 / 月
+      🌿 達成後の毎月の不労所得（年利4%ルール換算）: <span id="res-unearned" class="unearned">0</span> 万円 / 月
     </div>
+    
     <button id="copy-btn">この結果をコピーして不労所得計画を報告 📋</button>
   </div>
 </div>
@@ -157,51 +165,56 @@
 
 <script>
   window.addEventListener('DOMContentLoaded', () => {
+    const targetInput = document.getElementById("target-input");
     const monthlyInput = document.getElementById("monthly-input");
-    const yearsInput = document.getElementById("years-input");
     const rateInput = document.getElementById("rate-input");
     const calcBtn = document.getElementById("calc-btn");
     const resultBox = document.getElementById("result-box");
+    
+    const resYears = document.getElementById("res-years");
     const resSavings = document.getElementById("res-savings");
-    const resTotal = document.getElementById("res-total");
     const resUnearned = document.getElementById("res-unearned");
     const copyBtn = document.getElementById("copy-btn");
 
     let shareText = "";
 
     calcBtn.addEventListener("click", () => {
+      const target = parseFloat(targetInput.value) || 0;
       const monthly = parseFloat(monthlyInput.value) || 0;
-      const years = parseFloat(yearsInput.value) || 0;
       const annualRate = parseFloat(rateInput.value) || 0;
 
-      if (monthly <= 0 || years <= 0) {
-        alert("⚠️ 正しい数値を入力してください！");
+      if (target <= 0 || monthly <= 0) {
+        alert("⚠️ 目標金額と毎月の積立額を正しく入力してください！");
         return;
       }
 
-      const totalMonths = years * 12;
-      const pureSavings = monthly * totalMonths;
-
-      // 複利計算（月利換算で毎月積み立て）
-      let totalAsset = 0;
       const monthlyRate = (annualRate / 100) / 12;
+      let totalAsset = 0;
+      let monthsCount = 0;
 
+      // 目標金額に到達するまで毎月複利でシミュレーションを回す（最大100年＝1200ヶ月で安全ストップ）
       if (monthlyRate === 0) {
-        totalAsset = pureSavings;
+        monthsCount = Math.ceil(target / monthly);
+        totalAsset = monthsCount * monthly;
       } else {
-        for (let i = 0; i < totalMonths; i++) {
+        while (totalAsset < target && monthsCount < 1200) {
           totalAsset = (totalAsset + monthly) * (1 + monthlyRate);
+          monthsCount++;
         }
       }
 
-      // 毎月の不労所得（年利4%切り崩しルール換算）
+      const calcYears = (monthsCount / 12).toFixed(1);
+      const pureSavings = monthly * monthsCount;
+
+      // 達成した総資産額から、毎月の不労所得（4%ルール）を逆算
       const unearnedMonthly = (totalAsset * 0.04) / 12;
 
+      // 画面反映
+      resYears.innerText = calcYears;
       resSavings.innerText = Math.round(pureSavings).toLocaleString();
-      resTotal.innerText = Math.round(totalAsset).toLocaleString();
       resUnearned.innerText = Math.round(unearnedMonthly).toLocaleString();
 
-      shareText = `【未来貯金シミュレーター結果】\n毎月${monthly}万を${years}年運用(年利${annualRate}%)\n・ただの貯金: ${Math.round(pureSavings).toLocaleString()}万円\n・資産運用後: ${Math.round(totalAsset).toLocaleString()}万円🔥\n・毎月の不労所得: 約${Math.round(unearnedMonthly).toLocaleString()}万円\nアプデ後もURLは一生同じ！`;
+      shareText = `【未来貯金シミュレーター結果】\n目標${target}万円まで毎月${monthly}万積立(年利${annualRate}%)\n・達成期間: ${calcYears}年\n・積立元本: ${Math.round(pureSavings).toLocaleString()}万円\n・達成後の不労所得: 約${Math.round(unearnedMonthly).toLocaleString()}万円/月\nアプデ後もURLは一生同じ！`;
 
       resultBox.style.display = "block";
     });
@@ -209,7 +222,7 @@
     copyBtn.addEventListener("click", () => {
       if (!shareText) return;
       navigator.clipboard.writeText(shareText).then(() => {
-        alert("📋 将来の不労所得計画をコピーしました！そのままXに貼れます。");
+        alert("📋 将来の不労所得計画をコピーしました！");
       }).catch(() => {
         alert("⚠️ コピーに失敗しました。");
       });
