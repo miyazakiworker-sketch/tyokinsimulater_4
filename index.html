@@ -1,277 +1,220 @@
 <!DOCTYPE html>
-<html lang="en" translate="no">
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>フリーランス独立計画！ココアの未来貯金シミュレーター</title>
-    <style>
-        body {
-            background-color: #f5f6fa;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            color: #2f3640;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 15px;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>未来貯金シミュレーター 2.0</title>
+  <style>
+    /* ココアさん仕様：PC真ん中寄せ・スマホ完全フィット・集中できる極上黒モード */
+    body {
+      background-color: #12161a;
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+    .container {
+      max-width: 440px;
+      width: 100%;
+      background: #1a202c;
+      padding: 25px 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      border: 1px solid #2d3748;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    h1 {
+      font-size: 1.3rem;
+      color: #3182ce;
+      margin-top: 0;
+      margin-bottom: 20px;
+      border-bottom: 3px solid #3182ce;
+      padding-bottom: 10px;
+    }
+    label {
+      font-weight: bold;
+      font-size: 13px;
+      color: #a0aec0;
+      display: block;
+      text-align: left;
+      margin-top: 15px;
+    }
+    .input-group {
+      display: flex;
+      align-items: center;
+      margin-top: 6px;
+    }
+    input {
+      flex: 1;
+      padding: 10px 12px;
+      background-color: #12161a;
+      border: 2px solid #4a5568;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+      text-align: right;
+    }
+    input:focus { border-color: #3182ce; }
+    .unit { margin-left: 10px; font-weight: bold; font-size: 13px; color: #a0aec0; width: 35px; text-align: left; }
+    
+    #calc-btn, #copy-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 25px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      transition: background 0.2s;
+    }
+    #calc-btn { background-color: #3182ce; color: white; }
+    #calc-btn:hover { background-color: #2b6cb0; }
+    #copy-btn { background-color: #1da1f2; color: white; margin-top: 15px; }
+    #copy-btn:hover { background-color: #4ab3f4; }
 
-        .container {
-            background-color: white;
-            padding: 25px 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            width: 100%;       
-            max-width: 440px;  
-            box-sizing: border-box;
-            text-align: center;
-            margin-bottom: 25px;
-        }
+    .result-box {
+      display: none;
+      background-color: #12161a;
+      padding: 15px;
+      border-radius: 12px;
+      margin-top: 20px;
+      text-align: left;
+      border: 1px solid #2d3748;
+    }
+    .result-title { font-weight: bold; color: #fff; font-size: 14px; margin-bottom: 10px; border-left: 4px solid #3182ce; padding-left: 8px; }
+    .result-value { font-size: 13px; margin-bottom: 8px; color: #cbd5e0; }
+    .highlight { color: #e53e3e; font-weight: bold; font-size: 16px; }
+    .unearned { color: #38a169; font-weight: bold; font-size: 16px; }
 
-        h1 {
-            color: #2f3542;
-            font-size: 20px;
-            margin-bottom: 20px;
-            border-bottom: 3px solid #70a1ff;
-            padding-bottom: 10px;
-        }
+    .ad-space-box {
+      width: 100%; max-width: 440px; background-color: #1a202c; border: 2px dashed #2d3748; border-radius: 12px; padding: 15px; text-align: center; color: #718096; margin-top: 20px; box-sizing: border-box;
+    }
+    .ad-label { font-size: 10px; font-weight: bold; color: #4a5568; margin-bottom: 5px; }
+    .ad-text { font-size: 11px; color: #718096; line-height: 1.4; }
 
-        .input-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .input-group label {
-            font-size: 13px;
-            font-weight: bold;
-            color: #57606f;
-            width: 55%;
-        }
-
-        .input-group input {
-            width: 40%;
-            padding: 8px 12px;
-            border: 2px solid #ced6e0;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: right;
-            outline: none;
-        }
-
-        #calc-btn {
-            background-color: #70a1ff;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 25px;
-            cursor: pointer;
-            width: 100%;
-            margin: 20px 0;
-            box-shadow: 0 4px 6px rgba(112, 161, 255, 0.3);
-        }
-
-        .result-box {
-            display: none; 
-            background-color: #f1f2f6;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        .result-title {
-            font-weight: bold;
-            color: #2f3542;
-            font-size: 15px;
-            margin-bottom: 10px;
-            border-left: 4px solid #2ed573;
-            padding-left: 8px;
-        }
-
-        .result-value {
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: #57606f;
-        }
-
-        .highlight {
-            color: #ff4757;
-            font-weight: bold;
-            font-size: 17px;
-        }
-
-        #copy-btn {
-            background-color: #1da1f2;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 14px;
-            font-weight: bold;
-            border-radius: 20px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-        }
-
-        .ad-space-box {
-            width: 100%;
-            max-width: 440px;
-            box-sizing: border-box;
-            background-color: #f1f2f6;
-            border: 2px dashed #ced6e0;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .ad-label { font-size: 11px; font-weight: bold; color: #a4b0be; margin-bottom: 5px; }
-        .ad-placeholder-text { font-size: 12px; color: #a4b0be; line-height: 1.4; }
-    </style>
+    .footer-link { text-align: center; margin-top: 20px; font-size: 12px; }
+    .footer-link a { color: #3182ce; text-decoration: none; font-weight: bold; }
+    .footer-link a:hover { text-decoration: underline; }
+  </style>
 </head>
-    <!-- 【開発者看板リンク】これを追加するだけで自動でXに繋がります -->
-    <div style="text-align: center; margin-top: 20px;">
-        <a href="https://x.com/cocoa_next7" target="_blank" style="font-size: 12px; color: #3498db; text-decoration: none; font-weight: bold;">
-            🛠️ 開発者：ココア (プロのフリーランスへの成長記録はコチラ) 🛠️
-        </a>
+<body>
+
+<div class="container">
+  <h1>💰 未来貯金シミュレーター 2.0</h1>
+  
+  <label>① 毎月の積立額</label>
+  <div class="input-group">
+    <input type="number" id="monthly-input" value="5" min="0">
+    <span class="unit">万円</span>
+  </div>
+
+  <label>② 積立期間</label>
+  <div class="input-group">
+    <input type="number" id="years-input" value="10" min="0">
+    <span class="unit">年間</span>
+  </div>
+
+  <label>③ 想定年利（新NISA運用など）</label>
+  <div class="input-group">
+    <input type="number" id="rate-input" value="5" min="0" step="0.1">
+    <span class="unit">％</span>
+  </div>
+
+  <button id="calc-btn">未来の資産を一瞬で計算する！</button>
+
+  <!-- 計算結果出力ボックス -->
+  <div id="result-box" class="result-box">
+    <div class="result-title">シミュレーション結果</div>
+    <div class="result-value">普通に貯金した場合: <span id="res-savings" style="font-weight:bold;">0</span> 万円</div>
+    <div class="result-value">複利運用した場合: <span id="res-total" class="highlight">0</span> 万円</div>
+    <div class="result-value" style="border-top: 1px dashed #2d3748; padding-top: 10px; margin-top: 10px;">
+      🌿 毎月の不労所得（年利4%ルール換算）: <span id="res-unearned" class="unearned">0</span> 万円 / 月
     </div>
+    <button id="copy-btn">この結果をコピーして不労所得計画を報告 📋</button>
+  </div>
+</div>
 
-    <body>
+<!-- 将来の不労所得用広告スペース -->
+<div class="ad-space-box">
+  <div class="ad-label">Sponsored</div>
+  <div class="ad-text">※当サイトは開発費・サーバー維持費のために広告を掲載予定です。</div>
+</div>
 
-    <div class="container">
-        <h1>ココアの未来貯金シミュレーター</h1>
-        
-        <div class="input-group">
-            <label>① 毎月の手取り収入 (円)</label>
-            <input type="number" id="income" value="200000" min="0">
-        </div>
+<!-- ココアさんの公式看板リンク -->
+<div class="footer-link">
+  開発者：<a href="https://x.com" target="_blank">ココア (@cocoa_next7)</a>
+</div>
 
-        <div class="input-group">
-            <label>② 家賃・光熱費 (円)</label>
-            <input type="number" id="rent" value="70000" min="0">
-        </div>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const monthlyInput = document.getElementById("monthly-input");
+    const yearsInput = document.getElementById("years-input");
+    const rateInput = document.getElementById("rate-input");
+    const calcBtn = document.getElementById("calc-btn");
+    const resultBox = document.getElementById("result-box");
+    const resSavings = document.getElementById("res-savings");
+    const resTotal = document.getElementById("res-total");
+    const resUnearned = document.getElementById("res-unearned");
+    const copyBtn = document.getElementById("copy-btn");
 
-        <div class="input-group">
-            <label>③ 食費・生活費 (円)</label>
-            <input type="number" id="food" value="40000" min="0">
-        </div>
+    let shareText = "";
 
-        <div class="input-group">
-            <label>④ 趣味・PC・交際費 (円)</label>
-            <input type="number" id="hobby" value="30000" min="0">
-        </div>
+    calcBtn.addEventListener("click", () => {
+      const monthly = parseFloat(monthlyInput.value) || 0;
+      const years = parseFloat(yearsInput.value) || 0;
+      const annualRate = parseFloat(rateInput.value) || 0;
 
-        <div class="input-group" style="margin-top: 25px; border-top: 1px dashed #ced6e0; padding-top: 15px;">
-            <label style="color: #ff4757;">🎯 独立のための目標貯金額 (円)</label>
-            <input type="number" id="target" value="1000000" min="0">
-        </div>
+      if (monthly <= 0 || years <= 0) {
+        alert("⚠️ 正しい数値を入力してください！");
+        return;
+      }
 
-        <button id="calc-btn">未来をシミュレートする！</button>
+      const totalMonths = years * 12;
+      const pureSavings = monthly * totalMonths;
 
-        <div id="result-box" class="result-box">
-            <div class="result-title">シミュレーション結果</div>
-            <div class="result-value">毎月の純貯金額: <span id="res-surplus" class="highlight" style="color:#2ed573;">0</span> 円</div>
-            <div class="result-value">目標達成まで: <span id="res-months" class="highlight">0</span> ヶ月</div>
-            
-            <div id="res-advice" style="margin-top: 15px; font-size: 13px; color: #747d8c; line-height: 1.4; border-top: 1px solid #ced6e0; padding-top: 10px;"></div>
+      // 複利計算（月利換算で毎月積み立て）
+      let totalAsset = 0;
+      const monthlyRate = (annualRate / 100) / 12;
 
-            <button id="copy-btn">報告文をコピーする 📋</button>
-        </div>
-    </div>
-
-    <div class="ad-space-box">
-        <div class="ad-label">Sponsored</div>
-        <div class="ad-placeholder-text">
-            ※当サイトは開発費・サーバー維持費のために広告を掲載予定です。<br>
-            応援よろしくお願いいたします！
-        </div>
-    </div>
-
-    <script>
-    // 画面が完全に読み込まれてから安全に作動させるプロ仕様の動線
-    window.addEventListener('DOMContentLoaded', () => {
-        const monthlyInput = document.getElementById("monthly-input"); // 毎月の積立額
-        const yearsInput = document.getElementById("years-input");     // 積立期間
-        const rateInput = document.getElementById("rate-input");       // 想定年利
-        const calcBtn = document.getElementById("calc-btn");
-        const resultBox = document.getElementById("result-box");
-
-        // 出力用パーツ
-        const resSavings = document.getElementById("res-savings");
-        const resTotal = document.getElementById("res-total");
-        const resUnearned = document.getElementById("res-unearned");
-        const copyBtn = document.getElementById("copy-btn");
-
-        let shareText = "";
-
-        if (calcBtn) {
-            calcBtn.addEventListener("click", () => {
-                const monthly = parseFloat(monthlyInput.value) || 0;
-                const years = parseFloat(yearsInput.value) || 0;
-                const annualRate = parseFloat(rateInput.value) || 0;
-
-                if (monthly <= 0 || years <= 0) {
-                    alert("⚠️ 毎月の積立額と期間を正しく入力してください！");
-                    return;
-                }
-
-                // 1. 通常貯金（ただ現金を貯めた場合）
-                const totalMonths = years * 12;
-                const pureSavings = monthly * totalMonths;
-
-                // 2. 複利計算ロジック（年利を月利に変換して毎月積立投資）
-                let totalAsset = 0;
-                const monthlyRate = (annualRate / 100) / 12;
-
-                if (monthlyRate === 0) {
-                    totalAsset = pureSavings;
-                } else {
-                    for (let i = 0; i < totalMonths; i++) {
-                        totalAsset = (totalAsset + monthly) * (1 + monthlyRate);
-                    }
-                }
-
-                // 3. 不労所得（年利4%ルールで切り崩した場合の「毎月の不労所得額」を逆算）
-                // 資産 × 4% ÷ 12ヶ月
-                const unearnedMonthly = (totalAsset * 0.04) / 12;
-
-                // 画面への数値反映（万円単位に変換して綺麗にトリミング）
-                if (resSavings) resSavings.innerText = Math.round(pureSavings).toLocaleString();
-                if (resTotal) resTotal.innerText = Math.round(totalAsset).toLocaleString();
-                if (resUnearned) resUnearned.innerText = Math.round(unearnedMonthly).toLocaleString();
-
-                // X用コピペテキストの自動生成（140文字対応のショート版）
-                shareText = `【未来貯金シミュレーター結果】\n` +
-                            `毎月${monthly}万円を${years}年間運用\n` +
-                            `・ただの貯金: ${Math.round(pureSavings).toLocaleString()}万円\n` +
-                            `・投資運用後: ${Math.round(totalAsset).toLocaleString()}万円🔥\n` +
-                            `・毎月の不労所得: 約${Math.round(unearnedMonthly).toLocaleString()}万円\n` +
-                            `アプデ後も一生同じURL！`;
-
-                // 結果ボックスをシュパッと表示
-                if (resultBox) resultBox.style.display = "block";
-            });
+      if (monthlyRate === 0) {
+        totalAsset = pureSavings;
+      } else {
+        for (let i = 0; i < totalMonths; i++) {
+          totalAsset = (totalAsset + monthly) * (1 + monthlyRate);
         }
+      }
 
-        // Xコピー機能
-        if (copyBtn) {
-            copyBtn.addEventListener("click", () => {
-                if (!shareText) return;
-                navigator.clipboard.writeText(shareText).then(() => {
-                    alert("📋 将来の資産計画をクリップボードにコピーしました！");
-                }).catch(() => {
-                    alert("⚠️ コピーに失敗しました。");
-                });
-            });
-        }
+      // 毎月の不労所得（年利4%切り崩しルール換算）
+      const unearnedMonthly = (totalAsset * 0.04) / 12;
+
+      resSavings.innerText = Math.round(pureSavings).toLocaleString();
+      resTotal.innerText = Math.round(totalAsset).toLocaleString();
+      resUnearned.innerText = Math.round(unearnedMonthly).toLocaleString();
+
+      shareText = `【未来貯金シミュレーター結果】\n毎月${monthly}万を${years}年運用(年利${annualRate}%)\n・ただの貯金: ${Math.round(pureSavings).toLocaleString()}万円\n・資産運用後: ${Math.round(totalAsset).toLocaleString()}万円🔥\n・毎月の不労所得: 約${Math.round(unearnedMonthly).toLocaleString()}万円\nアプデ後もURLは一生同じ！`;
+
+      resultBox.style.display = "block";
     });
+
+    copyBtn.addEventListener("click", () => {
+      if (!shareText) return;
+      navigator.clipboard.writeText(shareText).then(() => {
+        alert("📋 将来の不労所得計画をコピーしました！そのままXに貼れます。");
+      }).catch(() => {
+        alert("⚠️ コピーに失敗しました。");
+      });
+    });
+  });
 </script>
 
 </body>
