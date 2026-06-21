@@ -195,64 +195,84 @@
     </div>
 
     <script>
+    // 画面が完全に読み込まれてから安全に作動させるプロ仕様の動線
+    window.addEventListener('DOMContentLoaded', () => {
+        const monthlyInput = document.getElementById("monthly-input"); // 毎月の積立額
+        const yearsInput = document.getElementById("years-input");     // 積立期間
+        const rateInput = document.getElementById("rate-input");       // 想定年利
         const calcBtn = document.getElementById("calc-btn");
         const resultBox = document.getElementById("result-box");
-        const resSurplus = document.getElementById("res-surplus");
-        const resMonths = document.getElementById("res-months");
-        const resAdvice = document.getElementById("res-advice");
+
+        // 出力用パーツ
+        const resSavings = document.getElementById("res-savings");
+        const resTotal = document.getElementById("res-total");
+        const resUnearned = document.getElementById("res-unearned");
         const copyBtn = document.getElementById("copy-btn");
 
         let shareText = "";
 
-        calcBtn.addEventListener("click", () => {
-            const income = parseInt(document.getElementById("income").value) || 0;
-            const rent = parseInt(document.getElementById("rent").value) || 0;
-            const food = parseInt(document.getElementById("food").value) || 0;
-            const hobby = parseInt(document.getElementById("hobby").value) || 0;
-            const target = parseInt(document.getElementById("target").value) || 0;
+        if (calcBtn) {
+            calcBtn.addEventListener("click", () => {
+                const monthly = parseFloat(monthlyInput.value) || 0;
+                const years = parseFloat(yearsInput.value) || 0;
+                const annualRate = parseFloat(rateInput.value) || 0;
 
-            const surplus = income - (rent + food + hobby);
-            resultBox.style.display = "block";
+                if (monthly <= 0 || years <= 0) {
+                    alert("⚠️ 毎月の積立額と期間を正しく入力してください！");
+                    return;
+                }
 
-            if (surplus <= 0) {
-                resSurplus.textContent = surplus.toLocaleString();
-                resSurplus.style.color = "#ff4757";
-                resMonths.textContent = "無限";
-                resAdvice.textContent = "⚠️ 現在赤字、または貯金ができない状態です！固定費を見直す計画を立てましょう！";
-                copyBtn.style.display = "none";
-                return;
-            }
+                // 1. 通常貯金（ただ現金を貯めた場合）
+                const totalMonths = years * 12;
+                const pureSavings = monthly * totalMonths;
 
-            const months = Math.ceil(target / surplus);
-            resSurplus.textContent = surplus.toLocaleString();
-            resSurplus.style.color = "#2ed573";
-            resMonths.textContent = months;
+                // 2. 複利計算ロジック（年利を月利に変換して毎月積立投資）
+                let totalAsset = 0;
+                const monthlyRate = (annualRate / 100) / 12;
 
-            let advice = "";
-            if (months <= 6) {
-                advice = "💡 素晴らしい貯金ペースです！来年の今頃には完全フリーランスとして大活躍している可能性が極めて高いです！";
-            } else if (months <= 12) {
-                advice = "💡 約1年で独立資金が貯まる計画です！来年1月からの受講期間中にスキルを完全に自分のものにしましょう！";
-            } else {
-                advice = "💡 着実に前進できる計画です。簡単なCAD案件を受注して『趣味代』を浮かせると、達成が数ヶ月早まります！";
-            }
-            resAdvice.textContent = advice;
+                if (monthlyRate === 0) {
+                    totalAsset = pureSavings;
+                } else {
+                    for (let i = 0; i < totalMonths; i++) {
+                        totalAsset = (totalAsset + monthly) * (1 + monthlyRate);
+                    }
+                }
 
-            copyBtn.style.display = "block";
-            copyBtn.textContent = "報告文をコピーする 📋";
-            copyBtn.style.backgroundColor = "#1da1f2";
+                // 3. 不労所得（年利4%ルールで切り崩した場合の「毎月の不労所得額」を逆算）
+                // 資産 × 4% ÷ 12ヶ月
+                const unearnedMonthly = (totalAsset * 0.04) / 12;
 
-            shareText = `ココアの未来貯金シミュレーターで計画を計算しました！毎月${surplus.toLocaleString()}円貯金し、あと【${months}ヶ月】で目標達成してフリーランスへ挑戦します！ #プログラミング初心者 #未来貯金シミュレーター`;
-        });
+                // 画面への数値反映（万円単位に変換して綺麗にトリミング）
+                if (resSavings) resSavings.innerText = Math.round(pureSavings).toLocaleString();
+                if (resTotal) resTotal.innerText = Math.round(totalAsset).toLocaleString();
+                if (resUnearned) resUnearned.innerText = Math.round(unearnedMonthly).toLocaleString();
 
-        copyBtn.addEventListener("click", () => {
-            navigator.clipboard.writeText(shareText).then(() => {
-                copyBtn.textContent = "コピー完了！そのままXに貼り付けられます！ ✅";
-                copyBtn.style.backgroundColor = "#2ed573";
-            }).catch(err => {
-                alert("コピーに失敗しました。");
+                // X用コピペテキストの自動生成（140文字対応のショート版）
+                shareText = `【未来貯金シミュレーター結果】\n` +
+                            `毎月${monthly}万円を${years}年間運用\n` +
+                            `・ただの貯金: ${Math.round(pureSavings).toLocaleString()}万円\n` +
+                            `・投資運用後: ${Math.round(totalAsset).toLocaleString()}万円🔥\n` +
+                            `・毎月の不労所得: 約${Math.round(unearnedMonthly).toLocaleString()}万円\n` +
+                            `アプデ後も一生同じURL！`;
+
+                // 結果ボックスをシュパッと表示
+                if (resultBox) resultBox.style.display = "block";
             });
-        });
-    </script>
+        }
+
+        // Xコピー機能
+        if (copyBtn) {
+            copyBtn.addEventListener("click", () => {
+                if (!shareText) return;
+                navigator.clipboard.writeText(shareText).then(() => {
+                    alert("📋 将来の資産計画をクリップボードにコピーしました！");
+                }).catch(() => {
+                    alert("⚠️ コピーに失敗しました。");
+                });
+            });
+        }
+    });
+</script>
+
 </body>
 </html>
